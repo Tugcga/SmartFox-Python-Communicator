@@ -1,0 +1,9 @@
+x64
+*.txt
+*.vcproj
+*.filters
+*.vcxproj.filters
+*.user
+targetver.h
+stdafx.h
+stdafx.cpp
