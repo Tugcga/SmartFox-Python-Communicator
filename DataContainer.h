@@ -54,10 +54,11 @@ public:
 	void put_byte(string key, unsigned char value);
 	void put_float(string key, float value);
 	void put_bool(string key, bool value);
+	void put_int(string key, int value);
 
 	string get_command();
-
 	string get_event_name();
+	std::vector<string> get_content_names();
 
 	boost::shared_ptr<SFSObject> get_sfs_object();
 	bool get_is_sfs_init();

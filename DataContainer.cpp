@@ -399,6 +399,19 @@ string DataContainer::get_event_name()
 	return event_name;
 }
 
+std::vector<string> DataContainer::get_content_names()
+{
+	std::vector<string> to_return(0);
+
+	if (is_sfs_object_init) { to_return.push_back("SFSObject"); }
+	if (is_sfs_user_init) { to_return.push_back("User"); }
+	if (is_sfs_mmoitem_init) { to_return.push_back("MMOItem"); }
+	if (is_lists_init) { to_return.push_back("Lists"); }
+	if (is_command_init) { to_return.push_back("Command"); }
+
+	return to_return;
+}
+
 boost::shared_ptr<SFSObject> DataContainer::get_sfs_object()
 {
 	return sfs_object;
@@ -437,6 +450,16 @@ void DataContainer::put_bool(string key, bool value)
 		is_sfs_object_init = true;
 	}
 	sfs_object->PutBool(key, value);
+}
+
+void DataContainer::put_int(string key, int value)
+{
+	if (!is_sfs_object_init)
+	{
+		sfs_object = boost::shared_ptr<SFSObject>(new SFSObject());
+		is_sfs_object_init = true;
+	}
+	sfs_object->PutInt(key, value);
 }
 
 DataContainer::~DataContainer()

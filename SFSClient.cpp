@@ -35,6 +35,8 @@ void SFSClient::connect(string host, int port, string zone)
 		sfs->AddEventListener(SFSEvent::PROXIMITY_LIST_UPDATE, boost::shared_ptr<EventListenerDelegate>(new EventListenerDelegate(SFSClient::on_proximity_list_update, (unsigned long long)this)));
 		sfs->AddEventListener(SFSEvent::EXTENSION_RESPONSE, boost::shared_ptr<EventListenerDelegate>(new EventListenerDelegate(SFSClient::on_extension_response, (unsigned long long)this)));
 		sfs->AddEventListener(SFSEvent::ADMIN_MESSAGE, boost::shared_ptr<EventListenerDelegate>(new EventListenerDelegate(SFSClient::on_admin_message, (unsigned long long)this)));
+		sfs->AddEventListener(SFSEvent::PUBLIC_MESSAGE, boost::shared_ptr<EventListenerDelegate>(new EventListenerDelegate(SFSClient::on_public_message, (unsigned long long)this)));
+		sfs->AddEventListener(SFSEvent::PRIVATE_MESSAGE, boost::shared_ptr<EventListenerDelegate>(new EventListenerDelegate(SFSClient::on_private_message, (unsigned long long)this)));
 
 		init_callbacks = true;
 	}
@@ -54,10 +56,21 @@ void SFSClient::disconnect()
 	sfs->Disconnect();
 }
 
-size_t SFSClient::update()
+std::vector<DataContainer> SFSClient::update()
 {
 	sfs->ProcessEvents();
-	return event_datas.size();
+
+	// create copy
+	std::vector<DataContainer> to_return(0);
+	for (size_t i = 0; i < event_datas.size(); i++)
+	{
+		to_return.push_back(event_datas[i]);
+	}
+	//clear original buffer
+	event_datas.clear();
+	event_datas.resize(0);
+
+	return to_return;
 }
 
 int SFSClient::get_my_id()
@@ -78,20 +91,6 @@ void SFSClient::login(string name, string password, string zone, DataContainer d
 	sfs->Send(request);
 }
 
-std::vector<DataContainer> SFSClient::get_event_datas()
-{
-	// create copy
-	std::vector<DataContainer> to_return(0);
-	for (size_t i = 0; i < event_datas.size(); i++)
-	{
-		to_return.push_back(event_datas[i]);
-	}
-	//clear original buffer
-	event_datas.clear();
-	event_datas.resize(0);
-	return to_return;
-}
-
 void SFSClient::send_command(const char* command, DataContainer data)
 {
 	if (data.get_is_sfs_init())
@@ -99,6 +98,12 @@ void SFSClient::send_command(const char* command, DataContainer data)
 		boost::shared_ptr<IRequest> request(new ExtensionRequest(command, data.get_sfs_object(), room));
 		sfs->Send(request);
 	}
+}
+
+void SFSClient::send_public_message(const char* message)
+{
+	boost::shared_ptr<IRequest> request(new PublicMessageRequest(message));
+	sfs->Send(request);
 }
 
 void SFSClient::on_connection(unsigned long long context, boost::shared_ptr<BaseEvent> evt)
@@ -247,5 +252,47 @@ void SFSClient::on_admin_message(unsigned long long context, boost::shared_ptr<B
 	containter.set_sfs_object(data);
 
 	containter.set_event_name("admin_message");
+	client->event_datas.push_back(containter);
+}
+
+void SFSClient::on_public_message(unsigned long long context, boost::shared_ptr<BaseEvent> evt)
+{
+	SFSClient* client = (SFSClient*)context;
+	boost::shared_ptr<map<string, boost::shared_ptr<void>>> event_params = evt->Params();
+	DataContainer containter;
+
+	boost::shared_ptr<void> prm_sender_ptr = (*event_params)["sender"];
+	boost::shared_ptr<User> prm_sender = ((boost::static_pointer_cast<User>)(prm_sender_ptr));
+
+	boost::shared_ptr<void> prm_message_ptr = (*event_params)["message"];
+	boost::shared_ptr<string> prm_message = ((boost::static_pointer_cast<string>)(prm_message_ptr));
+
+	boost::shared_ptr<SFSObject> data(new SFSObject());
+	data->PutUtfString("message", prm_message->c_str());
+	containter.set_sfs_object(data);
+	containter.set_sfs_user(prm_sender);
+
+	containter.set_event_name("public_message");
+	client->event_datas.push_back(containter);
+}
+
+void SFSClient::on_private_message(unsigned long long context, boost::shared_ptr<BaseEvent> evt)
+{
+	SFSClient* client = (SFSClient*)context;
+	boost::shared_ptr<map<string, boost::shared_ptr<void>>> event_params = evt->Params();
+	DataContainer containter;
+
+	boost::shared_ptr<void> prm_sender_ptr = (*event_params)["sender"];
+	boost::shared_ptr<User> prm_sender = ((boost::static_pointer_cast<User>)(prm_sender_ptr));
+
+	boost::shared_ptr<void> prm_message_ptr = (*event_params)["message"];
+	boost::shared_ptr<string> prm_message = ((boost::static_pointer_cast<string>)(prm_message_ptr));
+
+	boost::shared_ptr<SFSObject> data(new SFSObject());
+	data->PutUtfString("message", prm_message->c_str());
+	containter.set_sfs_object(data);
+	containter.set_sfs_user(prm_sender);
+
+	containter.set_event_name("private_message");
 	client->event_datas.push_back(containter);
 }

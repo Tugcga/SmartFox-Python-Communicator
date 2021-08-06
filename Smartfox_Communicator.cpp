@@ -16,8 +16,8 @@ PYBIND11_MODULE(SFSCommunicator, m)
 		.def("disconnect", &SFSClient::disconnect)
 		.def("login", &SFSClient::login)
 		.def("send_command", &SFSClient::send_command)
-		.def("get_my_id", &SFSClient::get_my_id)
-		.def("get_event_datas", &SFSClient::get_event_datas);
+		.def("send_public_message", &SFSClient::send_public_message)
+		.def("get_my_id", &SFSClient::get_my_id);
 
 	py::class_<DataContainer>(m, "DataContainer")
 		.def(py::init<>())
@@ -45,6 +45,7 @@ PYBIND11_MODULE(SFSCommunicator, m)
 		.def("get_mmoitem_double", &DataContainer::get_mmoitem_double)
 		.def("get_event_name", &DataContainer::get_event_name)
 		.def("get_command", &DataContainer::get_command)
+		.def("get_content_names", &DataContainer::get_content_names)
 		.def("put_byte", &DataContainer::put_byte)
 		.def("put_float", &DataContainer::put_float)
 		.def("put_bool", &DataContainer::put_bool);
