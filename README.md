@@ -1,6 +1,6 @@
 # What is it
 
-This is minimal Python bindings of the SmartFox c++ client API. It does not contains all possible functionality of the client application, but only one that used in [Two World project](http://twoworlds.azurewebsites.net/).
+This is minimal Python bindings of the SmartFox c++ client API. It does not contains all possible functionality of the client application, but only one that used in [Two World project game](http://twoworlds.azurewebsites.net/), [server sources](https://github.com/Tugcga/TwoWorldsServer), [client-server communication guide (on Russian)](https://github.com/Tugcga/TwoWorldsServer/blob/master/ClientServer.md)
 
 # Features
 
